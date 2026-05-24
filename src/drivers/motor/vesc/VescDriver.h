@@ -24,6 +24,7 @@ class VescDriver : public DebuggableDriver, public MotorDriver {
   bool SetUART(UARTDriver *uart, uint32_t baudrate);
   void RequestStatus() override;
   void SetDuty(float duty) override;
+  void Disable() override;
 
   void RawDataInput(uint8_t *data, size_t size) override;
 

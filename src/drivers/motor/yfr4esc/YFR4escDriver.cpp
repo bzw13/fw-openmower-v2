@@ -125,6 +125,12 @@ void YFR4escDriver::SetDuty(float duty) {
   SendControl(duty);
 }
 
+void YFR4escDriver::Disable() {
+  if (!IsStarted() || IsRawMode()) return;
+  last_duty_ = 0.0f;
+  SendControl(0.0f);
+}
+
 void YFR4escDriver::SendControl(float duty) {
   ControlPacket cp{.message_type = MessageType::CONTROL, .duty_cycle = static_cast<double>(duty), .crc = 0};
   const uint8_t* payload = reinterpret_cast<const uint8_t*>(&cp);

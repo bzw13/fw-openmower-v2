@@ -104,8 +104,8 @@ void DiffDriveService::SetDuty() {
   // Get the current emergency state
   bool emergency = emergency_service.GetEmergencyReasons() != 0;
   if (emergency) {
-    left_esc_driver_->SetDuty(0);
-    right_esc_driver_->SetDuty(0);
+    left_esc_driver_->Disable();
+    right_esc_driver_->Disable();
   } else {
     left_esc_driver_->SetDuty(speed_l_);
     right_esc_driver_->SetDuty(speed_r_);

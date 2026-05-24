@@ -43,6 +43,9 @@ class MotorDriver {
 
   virtual void RequestStatus() = 0;
   virtual void SetDuty(float duty) = 0;
+  virtual void Disable() {
+    SetDuty(0);
+  }
 
   virtual bool Start() {
     chDbgAssert(!started_, "Don't start twice");

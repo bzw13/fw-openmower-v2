@@ -81,7 +81,7 @@ void MowerService::SetDuty() {
   // Get the current emergency state
   bool emergency = emergency_service.GetEmergencyReasons() != 0;
   if (emergency) {
-    mower_driver_->SetDuty(0);
+    mower_driver_->Disable();
   } else {
     mower_driver_->SetDuty(mower_duty_);
   }

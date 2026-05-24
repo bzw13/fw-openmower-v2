@@ -208,6 +208,19 @@ void VescDriver::SetDuty(float duty) {
   chMtxUnlock(&mutex_);
 }
 
+void VescDriver::Disable() {
+  if (IsRawMode()) return;
+
+  // COMM_SET_CURRENT(0) releases the motor (freewheels) rather than holding at 0% duty.
+  chMtxLock(&mutex_);
+  payload_buffer_.payload_length = 5;
+  payload_buffer_.payload[0] = COMM_SET_CURRENT;
+  int32_t index = 1;
+  buffer_append_int32(payload_buffer_.payload, 0, &index);
+  SendPacket();
+  chMtxUnlock(&mutex_);
+}
+
 void VescDriver::RawDataInput(uint8_t* data, size_t size) {
   if (!IsRawMode()) {
     return;
