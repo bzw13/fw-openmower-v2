@@ -13,11 +13,34 @@ jobs:
   pre-commit:
     name: "Run Pre-Commit Checks"
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.GHCR_TOKEN }}
       - uses: actions/setup-python@v5
-      - uses: pre-commit/action@v3.0.1
+      - name: Apply clang-format
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --all-files clang-format
+        continue-on-error: true
+      - name: Commit formatting fixes
+        if: github.ref_type == 'branch'
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add -A
+          git diff --staged --quiet || git commit -m "style: apply clang-format"
+          git push origin HEAD:${{ github.head_ref || github.ref_name }}
+      - name: Run remaining pre-commit checks
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --all-files
+        env:
+          SKIP: clang-format
   artifacts:
     name: "Build Artifacts"
     needs: pre-commit
@@ -65,6 +88,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
     needs: artifacts
+    permissions:
+      contents: write
     steps:
       - name: Download artifacts from build stage
         uses: actions/download-artifact@v4
@@ -73,8 +98,7 @@ jobs:
           path: artifacts
       - name: Compress release directory into a versioned ZIP file
         run: cd artifacts && zip -r "../fw-openmower-v2-${{ github.ref_name }}.zip" .
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - uses: softprops/action-gh-release@v2
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: "fw-openmower-v2-${{ github.ref_name }}.zip"
